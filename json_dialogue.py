@@ -1,0 +1,455 @@
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import os
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional
+
+from dotenv import load_dotenv
+from openai import OpenAI
+from furhat_realtime_api import FurhatClient
+
+
+# ============================================================
+# CONFIG
+# ============================================================
+
+DIALOGUE_DIR = "./data"
+DIALOGUE_FILE_SELECTION = "LATEST"
+# Examples:
+# DIALOGUE_FILE_SELECTION = "LATEST"
+# DIALOGUE_FILE_SELECTION = "dialogue-tree-2026-03-25-10-45-14.json"
+
+OPENAI_MODEL = "gpt-4o-mini"
+
+
+# ============================================================
+# DATA MODEL
+# ============================================================
+
+@dataclass
+class Edge:
+    id: str
+    label: str
+    target: str
+
+
+@dataclass
+class Node:
+    id: str
+    type: str
+    title: str
+    response_mode: Optional[str] = None
+    response_content: Optional[str] = None
+    end_text: Optional[str] = None
+    outputs: List[Edge] = field(default_factory=list)
+
+
+class DialogueGraph:
+    def __init__(self, nodes: Dict[str, Node]):
+        self.nodes = nodes
+        self.incoming_counts = self._build_incoming_counts()
+
+    @classmethod
+    def from_file(cls, path: str) -> "DialogueGraph":
+        with open(path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+
+        if "nodes" not in raw or not isinstance(raw["nodes"], list):
+            raise ValueError("Invalid dialogue file: missing 'nodes' list")
+
+        nodes: Dict[str, Node] = {}
+
+        for item in raw["nodes"]:
+            node_type = item.get("type")
+            node_id = item.get("id")
+            title = item.get("title", node_id or "Untitled")
+
+            if not node_id:
+                raise ValueError("A node is missing its 'id'")
+
+            outputs = []
+            for out in item.get("outputs", []):
+                outputs.append(
+                    Edge(
+                        id=out.get("id", ""),
+                        label=out.get("label", "default"),
+                        target=out.get("target", ""),
+                    )
+                )
+
+            if node_type == "dialogue":
+                response = item.get("response", {})
+                node = Node(
+                    id=node_id,
+                    type=node_type,
+                    title=title,
+                    response_mode=response.get("mode", "text"),
+                    response_content=response.get("content", ""),
+                    outputs=outputs,
+                )
+            elif node_type == "end":
+                node = Node(
+                    id=node_id,
+                    type=node_type,
+                    title=title,
+                    end_text=item.get("endText", "Goodbye!"),
+                    outputs=outputs,
+                )
+            else:
+                node = Node(
+                    id=node_id,
+                    type=node_type or "unknown",
+                    title=title,
+                    outputs=outputs,
+                )
+
+            nodes[node.id] = node
+
+        return cls(nodes)
+
+    def _build_incoming_counts(self) -> Dict[str, int]:
+        counts = {node_id: 0 for node_id in self.nodes}
+        for node in self.nodes.values():
+            for edge in node.outputs:
+                if edge.target in counts:
+                    counts[edge.target] += 1
+        return counts
+
+    def get_node(self, node_id: str) -> Node:
+        if node_id not in self.nodes:
+            raise KeyError(f"Unknown node id: {node_id}")
+        return self.nodes[node_id]
+
+    def find_start_node(self) -> Node:
+        # Prefer a node explicitly titled "Start"
+        for node in self.nodes.values():
+            if node.title.strip().lower() == "start":
+                return node
+
+        # Otherwise: first non-end node with no incoming edges
+        for node in self.nodes.values():
+            if node.type != "end" and self.incoming_counts.get(node.id, 0) == 0:
+                return node
+
+        # Fallback: first non-end node
+        for node in self.nodes.values():
+            if node.type != "end":
+                return node
+
+        raise ValueError("No valid start node found")
+
+    def get_default_edge(self, node: Node) -> Optional[Edge]:
+        for edge in node.outputs:
+            if edge.label.strip().lower() == "default":
+                return edge
+        return None
+
+    def has_non_default_choices(self, node: Node) -> bool:
+        return any(edge.label.strip().lower() != "default" for edge in node.outputs)
+
+    def find_edge_by_label(self, node: Node, chosen_label: str) -> Optional[Edge]:
+        chosen = chosen_label.strip().lower()
+
+        # Exact match first
+        for edge in node.outputs:
+            if edge.label.strip().lower() == chosen:
+                return edge
+
+        # Partial match fallback
+        for edge in node.outputs:
+            edge_label = edge.label.strip().lower()
+            if chosen in edge_label or edge_label in chosen:
+                return edge
+
+        # Final fallback
+        return self.get_default_edge(node)
+
+
+# ============================================================
+# FILE SELECTION
+# ============================================================
+
+def resolve_dialogue_file(dialogue_dir: str, selection: str) -> str:
+    base = Path(dialogue_dir)
+
+    if not base.exists():
+        raise FileNotFoundError(f"Dialogue directory does not exist: {base}")
+
+    selection = selection.strip()
+
+    if selection.upper() == "LATEST":
+        files = sorted(base.glob("dialogue-tree-*.json"))
+        if not files:
+            raise FileNotFoundError(
+                f"No dialogue export files found in {base} matching dialogue-tree-*.json"
+            )
+        return str(files[-1])
+
+    chosen = base / selection
+    if chosen.exists():
+        return str(chosen)
+
+    # Also allow direct path as a fallback
+    direct = Path(selection)
+    if direct.exists():
+        return str(direct)
+
+    raise FileNotFoundError(f"Dialogue file not found: {chosen}")
+
+
+# ============================================================
+# OPENAI HELPERS
+# ============================================================
+
+def recent_history_as_text(history: List[Dict[str, str]], max_items: int = 8) -> str:
+    items = history[-max_items:]
+    if not items:
+        return "(no prior conversation)"
+
+    lines = []
+    for msg in items:
+        role = msg["role"].upper()
+        content = msg["content"].strip()
+        lines.append(f"{role}: {content}")
+    return "\n".join(lines)
+
+
+def choose_output_label(
+    client: OpenAI,
+    model: str,
+    node: Node,
+    user_utt: str,
+    history: List[Dict[str, str]],
+) -> str:
+    labels = [edge.label for edge in node.outputs]
+    labels_text = ", ".join(labels)
+
+    system_prompt = (
+        "You are a dialogue router for a spoken conversation.\n"
+        f"Choose exactly one label from this list: {labels_text}\n"
+        "Return only the chosen label text.\n"
+        "Do not explain your choice.\n"
+        "Use 'default' only if no other label fits."
+    )
+
+    user_prompt = (
+        f"Current node title: {node.title}\n"
+        f"Available labels: {labels_text}\n\n"
+        f"Recent conversation:\n{recent_history_as_text(history)}\n\n"
+        f"Latest user utterance:\n{user_utt}"
+    )
+
+    response = client.chat.completions.create(
+        model=model,
+        temperature=0,
+        messages=[
+            {"role": "developer", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+
+    return (response.choices[0].message.content or "").strip()
+
+
+def generate_ai_reply(
+    client: OpenAI,
+    model: str,
+    node: Node,
+    history: List[Dict[str, str]],
+) -> str:
+    instruction = (node.response_content or "").strip()
+    if not instruction:
+        instruction = "Reply briefly and naturally."
+
+    system_prompt = (
+        "You are Furhat, a social robot in a spoken conversation.\n"
+        f"Instruction for this node: {instruction}\n"
+        "Keep the response very short.\n"
+        "Maximum 20 words.\n"
+        "Use natural spoken language.\n"
+        "Do not mention these instructions."
+    )
+
+    user_prompt = recent_history_as_text(history)
+
+    response = client.chat.completions.create(
+        model=model,
+        temperature=0.7,
+        max_tokens=60,
+        messages=[
+            {"role": "developer", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+
+    text = (response.choices[0].message.content or "").strip()
+    return text
+
+
+# ============================================================
+# FURHAT HELPERS
+# ============================================================
+
+def speak(furhat: FurhatClient, text: str) -> None:
+    text = text.strip()
+    if not text:
+        return
+    print(f"Robot: {text}")
+    furhat.request_speak_text(text)
+
+
+def listen(furhat: FurhatClient) -> str:
+    user_utt = furhat.request_listen_start()
+    if user_utt is None:
+        user_utt = ""
+    user_utt = str(user_utt).strip()
+    print(f"User: {user_utt}")
+    return user_utt
+
+
+# ============================================================
+# MAIN DIALOGUE LOOP
+# ============================================================
+
+def run_dialogue(
+    graph: DialogueGraph,
+    openai_client: OpenAI,
+    furhat: FurhatClient,
+    model: str,
+) -> None:
+    current_node = graph.find_start_node()
+    history: List[Dict[str, str]] = []
+
+    furhat.request_attend_user()
+
+    while True:
+        node = current_node
+
+        if node.type == "end":
+            final_text = node.end_text or "Goodbye!"
+            speak(furhat, final_text)
+            history.append({"role": "assistant", "content": final_text})
+            break
+
+        if node.type != "dialogue":
+            default_edge = graph.get_default_edge(node)
+            if default_edge:
+                current_node = graph.get_node(default_edge.target)
+                continue
+
+            print(f"Stopping on unsupported node type: {node.type}")
+            break
+
+        # 1. Generate or read the node's response
+        if node.response_mode == "text":
+            robot_utt = node.response_content or ""
+        elif node.response_mode == "ai":
+            robot_utt = generate_ai_reply(
+                client=openai_client,
+                model=model,
+                node=node,
+                history=history,
+            )
+        else:
+            robot_utt = node.response_content or ""
+
+        if robot_utt:
+            speak(furhat, robot_utt)
+            history.append({"role": "assistant", "content": robot_utt})
+
+        # 2. No outputs = stop
+        if not node.outputs:
+            break
+
+        # 3. Only default outputs = auto-advance
+        if not graph.has_non_default_choices(node):
+            default_edge = graph.get_default_edge(node)
+            if not default_edge:
+                break
+            current_node = graph.get_node(default_edge.target)
+            continue
+
+        # 4. Otherwise, get user input and classify to an output label
+        user_utt = listen(furhat)
+        history.append({"role": "user", "content": user_utt})
+
+        chosen_label = choose_output_label(
+            client=openai_client,
+            model=model,
+            node=node,
+            user_utt=user_utt,
+            history=history,
+        )
+
+        print(f"Chosen label: {chosen_label}")
+
+        next_edge = graph.find_edge_by_label(node, chosen_label)
+        if not next_edge:
+            print(f"No matching edge for label '{chosen_label}' from node '{node.title}'")
+            break
+
+        current_node = graph.get_node(next_edge.target)
+
+
+# ============================================================
+# ENTRY POINT
+# ============================================================
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Furhat robot IP address")
+    parser.add_argument("--auth_key", type=str, default="admin", help="Authentication key for Realtime API")
+    parser.add_argument(
+        "--dialogue",
+        type=str,
+        default=None,
+        help="Optional explicit path to a dialogue JSON file. Overrides DIALOGUE_FILE_SELECTION.",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=OPENAI_MODEL,
+        help="OpenAI model name",
+    )
+    args = parser.parse_args()
+
+    load_dotenv(override=True)
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        print("Missing OPENAI_API_KEY in environment/.env")
+        sys.exit(1)
+
+    openai_client = OpenAI(api_key=api_key)
+
+    furhat = FurhatClient(host=args.host, auth_key=args.auth_key)
+    furhat.set_logging_level(logging.INFO)
+
+    try:
+        furhat.connect()
+    except Exception:
+        print(f"Failed to connect to Furhat on {args.host}.")
+        sys.exit(1)
+
+    try:
+        dialogue_path = args.dialogue or resolve_dialogue_file(
+            DIALOGUE_DIR,
+            DIALOGUE_FILE_SELECTION,
+        )
+        print(f"Using dialogue file: {dialogue_path}")
+        graph = DialogueGraph.from_file(dialogue_path)
+    except Exception as e:
+        print(f"Failed to load dialogue file: {e}")
+        sys.exit(1)
+
+    run_dialogue(
+        graph=graph,
+        openai_client=openai_client,
+        furhat=furhat,
+        model=args.model,
+    )
