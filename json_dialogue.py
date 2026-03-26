@@ -19,9 +19,10 @@ from furhat_realtime_api import FurhatClient
 # ============================================================
 
 DIALOGUE_DIR = "./data"
-DIALOGUE_FILE_SELECTION = "LATEST"
+DIALOGUE_FILE_SELECTION = "LOCAL"
 # Examples:
 # DIALOGUE_FILE_SELECTION = "LATEST"
+# DIALOGUE_FILE_SELECTION = "LOCAL"
 # DIALOGUE_FILE_SELECTION = "dialogue-tree-2026-03-25-10-45-14.json"
 
 OPENAI_MODEL = "gpt-4o-mini"
@@ -176,6 +177,10 @@ class DialogueGraph:
 
 def resolve_dialogue_file(dialogue_dir: str, selection: str) -> str:
     base = Path(dialogue_dir)
+
+    if (selection.upper() == "LOCAL"):
+        base = Path(dialogue_dir + "/local")
+        selection = "LATEST"
 
     if not base.exists():
         raise FileNotFoundError(f"Dialogue directory does not exist: {base}")
