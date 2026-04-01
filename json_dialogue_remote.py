@@ -71,6 +71,7 @@ class Node:
     output_label_instruction: Optional[str] = None
     response_mode: Optional[str] = None
     response_content: Optional[str] = None
+    response_gesture: Optional[str] = None
     end_text: Optional[str] = None
     outputs: List[Edge] = field(default_factory=list)
 
@@ -117,6 +118,7 @@ class DialogueGraph:
                     output_label_instruction=item.get("outputLabelInstruction", ""),
                     response_mode=response.get("mode", "text"),
                     response_content=response.get("content", ""),
+                    response_gesture=response.get("gesture", item.get("gesture", "")),
                     outputs=outputs,
                 )
             elif node_type == "end":
@@ -355,6 +357,70 @@ def choose_output_label(
     return parse_label_and_subject(raw)
 
 
+def choose_ai_gesture(
+    client: OpenAI,
+    model: str,
+    node: Node,
+    robot_utt: str,
+    history: List[Dict[str, str]],
+) -> Optional[str]:
+    choices = ", ".join(ALLOWED_GESTURES)
+    system_prompt = (
+        "You select a single social robot gesture for a spoken reply.\n"
+        f"Return exactly one token: one of [{choices}] or 'none'.\n"
+        "Do not add explanations or extra text."
+    )
+
+    user_prompt = (
+        f"Current node title: {node.title}\n"
+        f"Robot utterance: {robot_utt}\n"
+        f"Recent conversation:\n{recent_history_as_text(history)}"
+    )
+
+    response = client.chat.completions.create(
+        model=model,
+        temperature=0,
+        max_tokens=12,
+        messages=[
+            {"role": "developer", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+
+    raw = (response.choices[0].message.content or "").strip()
+    if raw.lower() == "none":
+        return None
+    return normalize_gesture(raw)
+
+
+def resolve_node_gesture(
+    client: OpenAI,
+    model: str,
+    node: Node,
+    robot_utt: str,
+    history: List[Dict[str, str]],
+    fallback_gesture: Optional[str],
+) -> Optional[str]:
+    gesture_setting = (node.response_gesture or "").strip()
+    if not gesture_setting:
+        return fallback_gesture
+
+    lowered = gesture_setting.lower()
+    if lowered == "none":
+        return None
+    if lowered == "ai":
+        return choose_ai_gesture(
+            client=client,
+            model=model,
+            node=node,
+            robot_utt=robot_utt,
+            history=history,
+        )
+
+    # Explicit gesture value: only allow known gestures.
+    return normalize_gesture(gesture_setting)
+
+
 def ground_and_rephrase(
     client: OpenAI,
     model: str,
@@ -521,7 +587,15 @@ def run_dialogue(
             robot_utt = apply_subject_placeholder(robot_utt, latest_subject)
 
         if robot_utt:
-            speak(furhat, robot_utt, pending_gesture)
+            gesture_for_utt = resolve_node_gesture(
+                client=openai_client,
+                model=model,
+                node=node,
+                robot_utt=robot_utt,
+                history=history,
+                fallback_gesture=pending_gesture,
+            )
+            speak(furhat, robot_utt, gesture_for_utt)
             history.append({"role": "assistant", "content": robot_utt})
             last_robot_response = robot_utt
             pending_gesture = None
@@ -651,10 +725,6 @@ if __name__ == "__main__":
         except Exception:
             continue
 
-    try:
-        furhat.gesture(name="BigSmile")
-    except Exception:
-        pass
 
     run_dialogue(
         graph=graph,
