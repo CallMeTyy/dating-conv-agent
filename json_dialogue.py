@@ -4,10 +4,12 @@ import argparse
 import json
 import logging
 import os
+import random
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -44,6 +46,7 @@ class Node:
     id: str
     type: str
     title: str
+    output_label_instruction: Optional[str] = None
     response_mode: Optional[str] = None
     response_content: Optional[str] = None
     end_text: Optional[str] = None
@@ -89,6 +92,7 @@ class DialogueGraph:
                     id=node_id,
                     type=node_type,
                     title=title,
+                    output_label_instruction=item.get("outputLabelInstruction", ""),
                     response_mode=response.get("mode", "text"),
                     response_content=response.get("content", ""),
                     outputs=outputs,
@@ -224,23 +228,63 @@ def recent_history_as_text(history: List[Dict[str, str]], max_items: int = 8) ->
     return "\n".join(lines)
 
 
+def pick_random_text_variant(text: str) -> str:
+    options = [part.strip() for part in text.split(";") if part.strip()]
+    if not options:
+        return ""
+    return random.choice(options)
+
+
+def apply_subject_placeholder(text: str, subject: Optional[str]) -> str:
+    if "{subj}" not in text:
+        return text
+
+    replacement = (subject or "").strip()
+    if not replacement:
+        replacement = "That"
+
+    return text.replace("{subj}", replacement)
+
+
+def parse_label_and_subject(raw: str) -> Tuple[str, Optional[str]]:
+    content = (raw or "").strip()
+    if not content:
+        return "default", None
+
+    match = re.search(r"\[(.*?)\]", content)
+    subject: Optional[str] = None
+    if match:
+        extracted = match.group(1).strip()
+        if extracted:
+            subject = extracted
+        content = re.sub(r"\s*\[.*?\]\s*", " ", content).strip()
+
+    return content, subject
+
+
 def choose_output_label(
     client: OpenAI,
     model: str,
     node: Node,
     user_utt: str,
     history: List[Dict[str, str]],
-) -> str:
+) -> Tuple[str, Optional[str]]:
     labels = [edge.label for edge in node.outputs]
     labels_text = ", ".join(labels)
 
     system_prompt = (
         "You are a dialogue router for a spoken conversation.\n"
         f"Choose exactly one label from this list: {labels_text}\n"
-        "Return only the chosen label text.\n"
+        "Return in this exact format: <label> [<subject>]\n"
+        "The subject should be a short concrete phrase from the latest user utterance.\n"
+        "If no clear subject is mentioned, return empty brackets like [] .\n"
         "Do not explain your choice.\n"
         "Use 'default' only if no other label fits."
     )
+
+    extra_instruction = (node.output_label_instruction or "").strip()
+    if extra_instruction:
+        system_prompt += f"\nAdditional routing instruction for this node: {extra_instruction}"
 
     user_prompt = (
         f"Current node title: {node.title}\n"
@@ -258,7 +302,8 @@ def choose_output_label(
         ],
     )
 
-    return (response.choices[0].message.content or "").strip()
+    raw = (response.choices[0].message.content or "").strip()
+    return parse_label_and_subject(raw)
 
 
 def generate_ai_reply(
@@ -329,6 +374,7 @@ def run_dialogue(
 ) -> None:
     current_node = graph.find_start_node()
     history: List[Dict[str, str]] = []
+    latest_subject: Optional[str] = None
 
     furhat.request_attend_user()
 
@@ -352,7 +398,8 @@ def run_dialogue(
 
         # 1. Generate or read the node's response
         if node.response_mode == "text":
-            robot_utt = node.response_content or ""
+            robot_utt = pick_random_text_variant(node.response_content or "")
+            robot_utt = apply_subject_placeholder(robot_utt, latest_subject)
         elif node.response_mode == "ai":
             robot_utt = generate_ai_reply(
                 client=openai_client,
@@ -360,8 +407,10 @@ def run_dialogue(
                 node=node,
                 history=history,
             )
+            robot_utt = apply_subject_placeholder(robot_utt, latest_subject)
         else:
-            robot_utt = node.response_content or ""
+            robot_utt = pick_random_text_variant(node.response_content or "")
+            robot_utt = apply_subject_placeholder(robot_utt, latest_subject)
 
         if robot_utt:
             speak(furhat, robot_utt)
@@ -383,7 +432,7 @@ def run_dialogue(
         user_utt = listen(furhat)
         history.append({"role": "user", "content": user_utt})
 
-        chosen_label = choose_output_label(
+        chosen_label, chosen_subject = choose_output_label(
             client=openai_client,
             model=model,
             node=node,
@@ -392,6 +441,9 @@ def run_dialogue(
         )
 
         print(f"Chosen label: {chosen_label}")
+        if chosen_subject:
+            latest_subject = chosen_subject
+            print(f"Chosen subject: {chosen_subject}")
 
         next_edge = graph.find_edge_by_label(node, chosen_label)
         if not next_edge:
@@ -451,6 +503,8 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Failed to load dialogue file: {e}")
         sys.exit(1)
+
+    furhat.request_voice_config(name="neural", gender="Neutral", language="en-US") 
 
     run_dialogue(
         graph=graph,
