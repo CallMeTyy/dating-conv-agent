@@ -29,6 +29,28 @@ DIALOGUE_FILE_SELECTION = "LOCAL"
 
 OPENAI_MODEL = "gpt-4.1-mini"
 
+ALLOWED_GESTURES = [
+    "BigSmile",
+    "Blink",
+    "BrowFrown",
+    "BrowRaise",
+    "CloseEyes",
+    "ExpressAnger",
+    "ExpressDisgust",
+    "ExpressFear",
+    "ExpressSad",
+    "GazeAway",
+    "Nod",
+    "Oh",
+    "OpenEyes",
+    "Roll",
+    "Shake",
+    "Smile",
+    "Surprise",
+    "Throughtful",
+    "Wink",
+]
+
 
 # ============================================================
 # DATA MODEL
@@ -246,20 +268,39 @@ def apply_subject_placeholder(text: str, subject: Optional[str]) -> str:
     return text.replace("{subj}", replacement)
 
 
-def parse_label_and_subject(raw: str) -> Tuple[str, Optional[str]]:
+def parse_label_and_subject(raw: str) -> Tuple[str, Optional[str], Optional[str]]:
     content = (raw or "").strip()
     if not content:
-        return "default", None
+        return "default", None, None
 
-    match = re.search(r"\[(.*?)\]", content)
+    subject_match = re.search(r"\[(.*?)\]", content)
     subject: Optional[str] = None
-    if match:
-        extracted = match.group(1).strip()
+    if subject_match:
+        extracted = subject_match.group(1).strip()
         if extracted:
             subject = extracted
         content = re.sub(r"\s*\[.*?\]\s*", " ", content).strip()
 
-    return content, subject
+    gesture_match = re.search(r"\{(.*?)\}", content)
+    gesture: Optional[str] = None
+    if gesture_match:
+        extracted = gesture_match.group(1).strip()
+        gesture = normalize_gesture(extracted)
+        content = re.sub(r"\s*\{.*?\}\s*", " ", content).strip()
+
+    return content, subject, gesture
+
+
+def normalize_gesture(gesture_name: str) -> Optional[str]:
+    wanted = (gesture_name or "").strip().lower()
+    if not wanted:
+        return None
+
+    for allowed in ALLOWED_GESTURES:
+        if allowed.lower() == wanted:
+            return allowed
+
+    return None
 
 
 def choose_output_label(
@@ -268,7 +309,7 @@ def choose_output_label(
     node: Node,
     user_utt: str,
     history: List[Dict[str, str]],
-) -> Tuple[str, Optional[str]]:
+) -> Tuple[str, Optional[str], Optional[str]]:
     labels = [edge.label for edge in node.outputs]
     # Always add special intents as available options
     labels.extend(["Repeat", "Confused", "other-language"])
@@ -281,9 +322,10 @@ def choose_output_label(
         "  - 'Repeat': user wants you to repeat what you just said\n"
         "  - 'Confused': user is confused or lost and needs clarification\n"
         "  - 'other-language': user's utterance is not English\n"
-        "Return in this exact format: <label> [<subject>]\n"
+        "Return in this exact format: <label> [<subject>] {<gesture>}\n"
         "The subject should be a short concrete phrase from the latest user utterance.\n"
         "If no clear subject is mentioned, return empty brackets like [] .\n"
+        f"Gesture must be exactly one of: {', '.join(ALLOWED_GESTURES)}\n"
         "Do not explain your choice.\n"
         "If the latest user utterance is not English, choose 'other-language'.\n"
         "Use 'default' only if no other label fits."
@@ -391,10 +433,18 @@ def generate_ai_reply(
 # FURHAT HELPERS
 # ============================================================
 
-def speak(furhat: FurhatClient, text: str) -> None:
+def speak(furhat: FurhatClient, text: str, gesture: Optional[str] = None) -> None:
     text = text.strip()
     if not text:
         return
+
+    resolved_gesture = normalize_gesture(gesture or "") if gesture else None
+    if resolved_gesture:
+        try:
+            furhat.request_gesture_start(resolved_gesture)
+        except Exception as e:
+            print(f"Gesture failed ({resolved_gesture}): {e}")
+
     print(f"Robot: {text}")
     furhat.request_speak_text(text)
 
@@ -422,6 +472,7 @@ def run_dialogue(
     history: List[Dict[str, str]] = []
     latest_subject: Optional[str] = None
     last_robot_response: str = ""
+    pending_gesture: Optional[str] = None
 
     furhat.request_attend_user()
 
@@ -430,7 +481,7 @@ def run_dialogue(
 
         if node.type == "end":
             final_text = node.end_text or "Goodbye!"
-            speak(furhat, final_text)
+            speak(furhat, final_text, pending_gesture)
             history.append({"role": "assistant", "content": final_text})
             break
 
@@ -460,9 +511,10 @@ def run_dialogue(
             robot_utt = apply_subject_placeholder(robot_utt, latest_subject)
 
         if robot_utt:
-            speak(furhat, robot_utt)
+            speak(furhat, robot_utt, pending_gesture)
             history.append({"role": "assistant", "content": robot_utt})
             last_robot_response = robot_utt
+            pending_gesture = None
 
         # 2. No outputs = stop
         if not node.outputs:
@@ -474,7 +526,7 @@ def run_dialogue(
             user_utt = listen(furhat)
             history.append({"role": "user", "content": user_utt})
 
-            chosen_label, chosen_subject = choose_output_label(
+            chosen_label, chosen_subject, chosen_gesture = choose_output_label(
                 client=openai_client,
                 model=model,
                 node=node,
@@ -486,11 +538,13 @@ def run_dialogue(
             if chosen_subject:
                 latest_subject = chosen_subject
                 print(f"Chosen subject: {chosen_subject}")
+            if chosen_gesture:
+                print(f"Chosen gesture: {chosen_gesture}")
 
             # Handle special intents that stay in the current node
             if chosen_label.strip().lower() == "repeat":
                 print("User asked to repeat.")
-                speak(furhat, last_robot_response)
+                speak(furhat, last_robot_response, chosen_gesture)
                 continue
 
             if chosen_label.strip().lower() == "confused":
@@ -502,7 +556,7 @@ def run_dialogue(
                     user_confused_utterance=user_utt,
                     history=history,
                 )
-                speak(furhat, rephrased)
+                speak(furhat, rephrased, chosen_gesture)
                 history.append({"role": "assistant", "content": rephrased})
                 last_robot_response = rephrased
                 continue
@@ -510,12 +564,13 @@ def run_dialogue(
             if chosen_label.strip().lower() == "other-language":
                 print("User spoke another language.")
                 fallback = "Sorry, I only understand English. Could you repeat that in English?"
-                speak(furhat, fallback)
+                speak(furhat, fallback, chosen_gesture)
                 history.append({"role": "assistant", "content": fallback})
                 last_robot_response = fallback
                 continue
 
             # Normal routing: exit the inner loop to process state transition
+            pending_gesture = chosen_gesture
             break
 
         next_edge = graph.find_edge_by_label(node, chosen_label)
@@ -582,6 +637,10 @@ if __name__ == "__main__":
     #face_status = furhat.request_face_status()
     #print(face_status["face_list"])   # available face names/ids
     furhat.request_face_config("adult - Fedora", True, True)
+
+    furhat.request_face_headpose(0, 0.1, 0, False)
+
+    furhat.request_gesture_start("BigSmile")
 
     run_dialogue(
         graph=graph,
