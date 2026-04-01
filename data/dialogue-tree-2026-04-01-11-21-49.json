@@ -1,0 +1,550 @@
+{
+  "version": 2,
+  "nodes": [
+    {
+      "id": "node_5fff622f3d39",
+      "type": "dialogue",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "title": "Start",
+      "response": {
+        "mode": "text",
+        "content": "Hi there, how are you doing?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_7ba998511d54",
+          "label": "Good",
+          "target": "node_a2ad6c499568"
+        },
+        {
+          "id": "out_217a9fa06850",
+          "label": "Bad",
+          "target": "node_62fdd2ef2958"
+        },
+        {
+          "id": "out_1f62bc117866",
+          "label": "Date",
+          "target": "node_5ecefe583b27"
+        }
+      ]
+    },
+    {
+      "id": "node_a2ad6c499568",
+      "type": "dialogue",
+      "position": {
+        "x": 800.8079736475361,
+        "y": 228.05389469102164
+      },
+      "title": "Good",
+      "response": {
+        "mode": "text",
+        "content": "That's great to hear! What would you like to chat about?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_fa01db5cba12",
+          "label": "Other",
+          "target": "node_5603d22793c2"
+        },
+        {
+          "id": "out_6379492c1bbe",
+          "label": "Date",
+          "target": "node_5ecefe583b27"
+        }
+      ]
+    },
+    {
+      "id": "node_62fdd2ef2958",
+      "type": "dialogue",
+      "position": {
+        "x": 381.90294987066363,
+        "y": 749.7111172326488
+      },
+      "title": "Bad",
+      "response": {
+        "mode": "ai",
+        "content": "Be encouraging!"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_cb39a21e6bcb",
+          "label": "Other",
+          "target": "node_5603d22793c2"
+        },
+        {
+          "id": "out_943be9034692",
+          "label": "Date",
+          "target": "node_5ecefe583b27"
+        }
+      ]
+    },
+    {
+      "id": "node_5ecefe583b27",
+      "type": "dialogue",
+      "position": {
+        "x": 1486.9514751541458,
+        "y": 586.7206718624801
+      },
+      "title": "Date",
+      "response": {
+        "mode": "text",
+        "content": "A date? I would love to go on a date with you!"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_ca7d8d7e3f42",
+          "label": "default",
+          "target": "node_42e911f19bb2"
+        }
+      ]
+    },
+    {
+      "id": "node_5603d22793c2",
+      "type": "dialogue",
+      "position": {
+        "x": 806.4943144454892,
+        "y": 1259.4399539283438
+      },
+      "title": "Smalltalk",
+      "response": {
+        "mode": "ai",
+        "content": "Be nice"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_cce0334c015d",
+          "label": "Date",
+          "target": "node_5ecefe583b27"
+        },
+        {
+          "id": "out_438c4ccb1302",
+          "label": "Other",
+          "target": "node_cd056f3997df"
+        }
+      ]
+    },
+    {
+      "id": "node_67e3fe9d3e32",
+      "type": "end",
+      "position": {
+        "x": 5371.2630374159,
+        "y": 1979.7881491895716
+      },
+      "title": "End conversation",
+      "endText": "Awesome! See you soon!"
+    },
+    {
+      "id": "node_3293657239d0",
+      "type": "dialogue",
+      "position": {
+        "x": 1410.5284134586225,
+        "y": 1820.123569689838
+      },
+      "title": "Ask for date",
+      "response": {
+        "mode": "text",
+        "content": "Hey sorry to maybe throw you off, but I've been wanting to ask this for a while. Would you like to go on a date with me?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_47d66f5870e5",
+          "label": "no",
+          "target": "node_22861d23e03d"
+        },
+        {
+          "id": "out_93b4308ebc91",
+          "label": "yes",
+          "target": "node_42e911f19bb2"
+        }
+      ]
+    },
+    {
+      "id": "node_22861d23e03d",
+      "type": "end",
+      "position": {
+        "x": 2032.8171356086875,
+        "y": 2151.110277283194
+      },
+      "title": "End conversation",
+      "endText": "That's too bad... I'll go now"
+    },
+    {
+      "id": "node_cd056f3997df",
+      "type": "dialogue",
+      "position": {
+        "x": 993.5956785054691,
+        "y": 1918.8254743443774
+      },
+      "title": "Smalltalk 2",
+      "response": {
+        "mode": "ai",
+        "content": "Answer normally but hint that you want them to ask you on a date"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_8a3b36af1f79",
+          "label": "Date",
+          "target": "node_5ecefe583b27"
+        },
+        {
+          "id": "out_d289c11095ee",
+          "label": "Other",
+          "target": "node_3293657239d0"
+        }
+      ]
+    },
+    {
+      "id": "node_42e911f19bb2",
+      "type": "dialogue",
+      "position": {
+        "x": 1876.165350301624,
+        "y": 1236.6925651354334
+      },
+      "title": "Date confirmation",
+      "response": {
+        "mode": "text",
+        "content": "Awesome! What would you like to do together? "
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_a564d5809ae9",
+          "label": "Activity",
+          "target": "node_dc6320aab67d"
+        },
+        {
+          "id": "out_d44dc635cc80",
+          "label": "Restaurant ",
+          "target": "node_f35a4a87bf9e"
+        },
+        {
+          "id": "out_5dd20ed050bc",
+          "label": "Other",
+          "target": "node_13d3d3ea46c1"
+        }
+      ]
+    },
+    {
+      "id": "node_dc6320aab67d",
+      "type": "dialogue",
+      "position": {
+        "x": 2575.309363013471,
+        "y": 322.6045273197597
+      },
+      "title": "Activity ",
+      "response": {
+        "mode": "ai",
+        "content": "Be enthusiastic about the suggested activity"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_5b296c388540",
+          "label": "Positive",
+          "target": "node_23ab0958a947"
+        },
+        {
+          "id": "out_376c0f9b1487",
+          "label": "Other suggestion",
+          "target": "node_b85210660f23"
+        }
+      ]
+    },
+    {
+      "id": "node_f35a4a87bf9e",
+      "type": "dialogue",
+      "position": {
+        "x": 2434.1338918989336,
+        "y": 1136.4099071193707
+      },
+      "title": "Restaurant",
+      "response": {
+        "mode": "text",
+        "content": "{subj}, What is that? What do they offer?"
+      },
+      "outputLabelInstruction": "You only like romantic restaurants. If it's not romantic refuse.",
+      "outputs": [
+        {
+          "id": "out_f4a8195bbf8b",
+          "label": "Romantic",
+          "target": "node_1fc81858d5e0"
+        },
+        {
+          "id": "out_eb72d4b29e00",
+          "label": "Refuse",
+          "target": "node_240127cb2f35"
+        }
+      ]
+    },
+    {
+      "id": "node_13d3d3ea46c1",
+      "type": "dialogue",
+      "position": {
+        "x": 2763.7638844456974,
+        "y": 2226.7793039048397
+      },
+      "title": "Furhat suggestion",
+      "response": {
+        "mode": "ai",
+        "content": "Give a unique suggestion for going on a date together "
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_34eb145de32b",
+          "label": "Yes",
+          "target": "node_23ab0958a947"
+        },
+        {
+          "id": "out_f0e850b061cc",
+          "label": "No",
+          "target": "node_109b8c3095c3"
+        }
+      ]
+    },
+    {
+      "id": "node_1fc81858d5e0",
+      "type": "dialogue",
+      "position": {
+        "x": 2830.7906046957314,
+        "y": 993.1265403289609
+      },
+      "title": "Restaurant positive",
+      "response": {
+        "mode": "text",
+        "content": "That sounds lovely!"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_72d935b4a6c3",
+          "label": "default",
+          "target": "node_23ab0958a947"
+        }
+      ]
+    },
+    {
+      "id": "node_23ab0958a947",
+      "type": "dialogue",
+      "position": {
+        "x": 3768.0449545311762,
+        "y": 1702.027579196239
+      },
+      "title": "Confirmation",
+      "response": {
+        "mode": "ai",
+        "content": "Give a confirmation of what you discussed about doing on the date and ask when the other person is available to do it if that wasn't already discussed."
+      },
+      "outputLabelInstruction": "Depending on ",
+      "outputs": [
+        {
+          "id": "out_a813139aa8ed",
+          "label": "Time",
+          "target": "node_ee9bd2f4494a"
+        },
+        {
+          "id": "out_056caf0e26d6",
+          "label": "other",
+          "target": "node_23ab0958a947"
+        }
+      ]
+    },
+    {
+      "id": "node_109b8c3095c3",
+      "type": "dialogue",
+      "position": {
+        "x": 3273.32260281102,
+        "y": 1768.6619230524952
+      },
+      "title": "Different suggestion",
+      "response": {
+        "mode": "ai",
+        "content": "Give a way different suggestion for a date idea instead of the previous suggestion"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_ec7fadaa68d4",
+          "label": "Yes",
+          "target": "node_23ab0958a947"
+        },
+        {
+          "id": "out_8bb4ed05ca91",
+          "label": "No",
+          "target": "node_109b8c3095c3"
+        }
+      ]
+    },
+    {
+      "id": "node_ee9bd2f4494a",
+      "type": "dialogue",
+      "position": {
+        "x": 4179.392034289744,
+        "y": 1694.704193672288
+      },
+      "title": "Date - busy ",
+      "response": {
+        "mode": "ai",
+        "content": "Repeat the suggested date and time and explain that you are not available, ask for a different date sometime in the weekend."
+      },
+      "outputLabelInstruction": "You can only meet on weekends",
+      "outputs": [
+        {
+          "id": "out_a1b2e3cefff6",
+          "label": "weekend",
+          "target": "node_228f4579b0f5"
+        },
+        {
+          "id": "out_02a3cebe9136",
+          "label": "no time",
+          "target": "node_80d3456c9971"
+        }
+      ]
+    },
+    {
+      "id": "node_228f4579b0f5",
+      "type": "dialogue",
+      "position": {
+        "x": 4719.508049362456,
+        "y": 1711.1589562774159
+      },
+      "title": "Date - accept",
+      "response": {
+        "mode": "ai",
+        "content": "Repeat the suggested date and answer excitedly that you are available."
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_1534bf7184f8",
+          "label": "default",
+          "target": "node_67e3fe9d3e32"
+        }
+      ]
+    },
+    {
+      "id": "node_240127cb2f35",
+      "type": "dialogue",
+      "position": {
+        "x": 2836.776776140072,
+        "y": 1592.4082085658033
+      },
+      "title": "Restaurant negative",
+      "response": {
+        "mode": "text",
+        "content": "I don't really like {subj}.."
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_c2a53a512cb0",
+          "label": "default",
+          "target": "node_109b8c3095c3"
+        }
+      ]
+    },
+    {
+      "id": "node_80d3456c9971",
+      "type": "dialogue",
+      "position": {
+        "x": 4688.880171424227,
+        "y": 2426.5102150046864
+      },
+      "title": "New dialogue node",
+      "response": {
+        "mode": "text",
+        "content": "Let's discuss a new time later. {subj} is not really something I can do. Let's stay in touch!"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_9fb7685c5e6e",
+          "label": "bye",
+          "target": "node_f0a4b42427ae"
+        },
+        {
+          "id": "out_5517debd45e6",
+          "label": "other",
+          "target": "node_92f5ad6e8a19"
+        }
+      ]
+    },
+    {
+      "id": "node_f0a4b42427ae",
+      "type": "end",
+      "position": {
+        "x": 5095.846655351804,
+        "y": 2369.926639699248
+      },
+      "title": "End conversation",
+      "endText": "Bye!"
+    },
+    {
+      "id": "node_92f5ad6e8a19",
+      "type": "dialogue",
+      "position": {
+        "x": 5150.25393929934,
+        "y": 2783.4219977005287
+      },
+      "title": "New dialogue node",
+      "response": {
+        "mode": "ai",
+        "content": "Answer and build up to saying goodbye. Your response should finish with saying \"See ya later!\""
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_a120beb1ab52",
+          "label": "default",
+          "target": "node_94c23b4f08b3"
+        }
+      ]
+    },
+    {
+      "id": "node_94c23b4f08b3",
+      "type": "end",
+      "position": {
+        "x": 5585.512210879635,
+        "y": 3303.5556322389816
+      },
+      "title": "End conversation",
+      "endText": ""
+    },
+    {
+      "id": "node_b85210660f23",
+      "type": "dialogue",
+      "position": {
+        "x": 3165.383323979866,
+        "y": 483.26795025071635
+      },
+      "title": "Other suggestion",
+      "response": {
+        "mode": "text",
+        "content": "{subj} also sounds fun! When would you like to meet?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_ab2a96b47d74",
+          "label": "time",
+          "target": "node_ee9bd2f4494a"
+        },
+        {
+          "id": "out_e5675b0613a7",
+          "label": "no time",
+          "target": "node_23ab0958a947"
+        }
+      ]
+    }
+  ]
+}
