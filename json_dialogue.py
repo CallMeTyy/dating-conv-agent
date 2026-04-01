@@ -270,8 +270,8 @@ def choose_output_label(
     history: List[Dict[str, str]],
 ) -> Tuple[str, Optional[str]]:
     labels = [edge.label for edge in node.outputs]
-    # Always add Repeat and Confused as available options
-    labels.extend(["Repeat", "Confused"])
+    # Always add special intents as available options
+    labels.extend(["Repeat", "Confused", "other-language"])
     labels_text = ", ".join(labels)
 
     system_prompt = (
@@ -280,10 +280,12 @@ def choose_output_label(
         "Special labels:\n"
         "  - 'Repeat': user wants you to repeat what you just said\n"
         "  - 'Confused': user is confused or lost and needs clarification\n"
+        "  - 'other-language': user's utterance is not English\n"
         "Return in this exact format: <label> [<subject>]\n"
         "The subject should be a short concrete phrase from the latest user utterance.\n"
         "If no clear subject is mentioned, return empty brackets like [] .\n"
         "Do not explain your choice.\n"
+        "If the latest user utterance is not English, choose 'other-language'.\n"
         "Use 'default' only if no other label fits."
     )
 
@@ -324,6 +326,7 @@ def ground_and_rephrase(
         "1. Acknowledge the confusion.\n"
         "2. Ground yourself by referencing what you just said.\n"
         "3. Rephrase or simplify your previous point to help the user understand.\n"
+        "Always respond in English.\n"
         "Keep the response very short (maximum 20 words).\n"
         "Use natural spoken language."
     )
@@ -361,6 +364,7 @@ def generate_ai_reply(
     system_prompt = (
         "You are Furhat, a social robot in a spoken conversation.\n"
         f"Instruction for this node: {instruction}\n"
+        "Always respond in English.\n"
         "Keep the response very short.\n"
         "Maximum 20 words.\n"
         "Use natural spoken language.\n"
@@ -464,16 +468,8 @@ def run_dialogue(
         if not node.outputs:
             break
 
-        # 3. Only default outputs = auto-advance
-        if not graph.has_non_default_choices(node):
-            default_edge = graph.get_default_edge(node)
-            if not default_edge:
-                break
-            current_node = graph.get_node(default_edge.target)
-            continue
-
-        # 4. Otherwise, get user input and classify to an output label
-        # Loop here to handle Repeat and Confused intents without state transitions
+        # 3. Get user input and classify to an output label.
+        # Loop here to handle special intents without state transitions.
         while True:
             user_utt = listen(furhat)
             history.append({"role": "user", "content": user_utt})
@@ -509,6 +505,14 @@ def run_dialogue(
                 speak(furhat, rephrased)
                 history.append({"role": "assistant", "content": rephrased})
                 last_robot_response = rephrased
+                continue
+
+            if chosen_label.strip().lower() == "other-language":
+                print("User spoke another language.")
+                fallback = "Sorry, I only understand English. Could you repeat that in English?"
+                speak(furhat, fallback)
+                history.append({"role": "assistant", "content": fallback})
+                last_robot_response = fallback
                 continue
 
             # Normal routing: exit the inner loop to process state transition
@@ -573,7 +577,11 @@ if __name__ == "__main__":
         print(f"Failed to load dialogue file: {e}")
         sys.exit(1)
 
-    furhat.request_voice_config(name="neural", gender="Neutral", language="en-US") 
+    furhat.request_voice_config(name="Fenna", gender="Female", language="nl-Nl") 
+
+    #face_status = furhat.request_face_status()
+    #print(face_status["face_list"])   # available face names/ids
+    furhat.request_face_config("adult - Fedora", True, True)
 
     run_dialogue(
         graph=graph,
