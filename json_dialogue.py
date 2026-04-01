@@ -27,7 +27,7 @@ DIALOGUE_FILE_SELECTION = "LOCAL"
 # DIALOGUE_FILE_SELECTION = "LOCAL"
 # DIALOGUE_FILE_SELECTION = "dialogue-tree-2026-03-25-10-45-14.json"
 
-OPENAI_MODEL = "gpt-4o-mini"
+OPENAI_MODEL = "gpt-4.1-mini"
 
 
 # ============================================================
@@ -270,11 +270,16 @@ def choose_output_label(
     history: List[Dict[str, str]],
 ) -> Tuple[str, Optional[str]]:
     labels = [edge.label for edge in node.outputs]
+    # Always add Repeat and Confused as available options
+    labels.extend(["Repeat", "Confused"])
     labels_text = ", ".join(labels)
 
     system_prompt = (
         "You are a dialogue router for a spoken conversation.\n"
         f"Choose exactly one label from this list: {labels_text}\n"
+        "Special labels:\n"
+        "  - 'Repeat': user wants you to repeat what you just said\n"
+        "  - 'Confused': user is confused or lost and needs clarification\n"
         "Return in this exact format: <label> [<subject>]\n"
         "The subject should be a short concrete phrase from the latest user utterance.\n"
         "If no clear subject is mentioned, return empty brackets like [] .\n"
@@ -304,6 +309,43 @@ def choose_output_label(
 
     raw = (response.choices[0].message.content or "").strip()
     return parse_label_and_subject(raw)
+
+
+def ground_and_rephrase(
+    client: OpenAI,
+    model: str,
+    prev_robot_response: str,
+    user_confused_utterance: str,
+    history: List[Dict[str, str]],
+) -> str:
+    system_prompt = (
+        "You are Furhat, a social robot in a spoken conversation.\n"
+        "The user seems confused or lost. Your task is to:\n"
+        "1. Acknowledge the confusion.\n"
+        "2. Ground yourself by referencing what you just said.\n"
+        "3. Rephrase or simplify your previous point to help the user understand.\n"
+        "Keep the response very short (maximum 20 words).\n"
+        "Use natural spoken language."
+    )
+
+    user_prompt = (
+        f"Your previous response was: {prev_robot_response}\n"
+        f"The user's confused response: {user_confused_utterance}\n"
+        f"Recent conversation context:\n{recent_history_as_text(history)}"
+    )
+
+    response = client.chat.completions.create(
+        model=model,
+        temperature=0.7,
+        max_tokens=60,
+        messages=[
+            {"role": "developer", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+
+    text = (response.choices[0].message.content or "").strip()
+    return text
 
 
 def generate_ai_reply(
@@ -375,6 +417,7 @@ def run_dialogue(
     current_node = graph.find_start_node()
     history: List[Dict[str, str]] = []
     latest_subject: Optional[str] = None
+    last_robot_response: str = ""
 
     furhat.request_attend_user()
 
@@ -415,6 +458,7 @@ def run_dialogue(
         if robot_utt:
             speak(furhat, robot_utt)
             history.append({"role": "assistant", "content": robot_utt})
+            last_robot_response = robot_utt
 
         # 2. No outputs = stop
         if not node.outputs:
@@ -429,21 +473,46 @@ def run_dialogue(
             continue
 
         # 4. Otherwise, get user input and classify to an output label
-        user_utt = listen(furhat)
-        history.append({"role": "user", "content": user_utt})
+        # Loop here to handle Repeat and Confused intents without state transitions
+        while True:
+            user_utt = listen(furhat)
+            history.append({"role": "user", "content": user_utt})
 
-        chosen_label, chosen_subject = choose_output_label(
-            client=openai_client,
-            model=model,
-            node=node,
-            user_utt=user_utt,
-            history=history,
-        )
+            chosen_label, chosen_subject = choose_output_label(
+                client=openai_client,
+                model=model,
+                node=node,
+                user_utt=user_utt,
+                history=history,
+            )
 
-        print(f"Chosen label: {chosen_label}")
-        if chosen_subject:
-            latest_subject = chosen_subject
-            print(f"Chosen subject: {chosen_subject}")
+            print(f"Chosen label: {chosen_label}")
+            if chosen_subject:
+                latest_subject = chosen_subject
+                print(f"Chosen subject: {chosen_subject}")
+
+            # Handle special intents that stay in the current node
+            if chosen_label.strip().lower() == "repeat":
+                print("User asked to repeat.")
+                speak(furhat, last_robot_response)
+                continue
+
+            if chosen_label.strip().lower() == "confused":
+                print("User is confused. Grounding and rephrasing.")
+                rephrased = ground_and_rephrase(
+                    client=openai_client,
+                    model=model,
+                    prev_robot_response=last_robot_response,
+                    user_confused_utterance=user_utt,
+                    history=history,
+                )
+                speak(furhat, rephrased)
+                history.append({"role": "assistant", "content": rephrased})
+                last_robot_response = rephrased
+                continue
+
+            # Normal routing: exit the inner loop to process state transition
+            break
 
         next_edge = graph.find_edge_by_label(node, chosen_label)
         if not next_edge:
