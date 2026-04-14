@@ -314,7 +314,7 @@ def choose_output_label(
 ) -> Tuple[str, Optional[str], Optional[str]]:
     labels = [edge.label for edge in node.outputs]
     # Always add special intents as available options
-    labels.extend(["Repeat", "Confused", "other-language"])
+    labels.extend(["Repeat", "Confused"])
     labels_text = ", ".join(labels)
 
     system_prompt = (
@@ -322,8 +322,7 @@ def choose_output_label(
         f"Choose exactly one label from this list: {labels_text}\n"
         "Special labels:\n"
         "  - 'Repeat': user wants you to repeat what you just said\n"
-        "  - 'Confused': user is confused or lost and needs clarification\n"
-        "  - 'other-language': user's utterance is not English\n"
+        "  - 'Confused': user is confused or lost and needs clarification, only pick when nothing else fits.\n"
         "Return in this exact format: <label> [<subject>] {<gesture>}\n"
         "The subject should be a short concrete phrase from the latest user utterance.\n"
         "If no clear subject is mentioned, return empty brackets like [] .\n"
@@ -706,11 +705,11 @@ if __name__ == "__main__":
         print(f"Failed to load dialogue file: {e}")
         sys.exit(1)
 
-    furhat.request_voice_config(name="Fenna", gender="Female", language="nl-Nl") 
+    furhat.request_voice_config(name="Neural", gender="Neutral", language="en-US") 
 
     #face_status = furhat.request_face_status()
     #print(face_status["face_list"])   # available face names/ids
-    furhat.request_face_config("adult - Fedora", True, True)
+    furhat.request_face_config("adult - Jane", True, True)
 
     furhat.request_face_headpose(0, 0.1, 0, False)
 
