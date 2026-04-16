@@ -1,0 +1,1302 @@
+{
+  "version": 2,
+  "nodes": [
+    {
+      "id": "node_2905a9be175e",
+      "type": "dialogue",
+      "position": {
+        "x": -524.268588118458,
+        "y": 665.5098972462617
+      },
+      "title": "Start",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Hi there, how are you doing?"
+      },
+      "outputLabelInstruction": "If the user asks how we are, always go to Ask-how-we-are regardless of what our answer is",
+      "outputs": [
+        {
+          "id": "out_677fef36a586",
+          "label": "Good",
+          "target": "node_1a77d13a49fe"
+        },
+        {
+          "id": "out_043a9e7d0a26",
+          "label": "Bad",
+          "target": "node_0d687a1a3310"
+        },
+        {
+          "id": "out_b3f84f1e7bdf",
+          "label": "Ask-how-we-are",
+          "target": "node_243bd851695b"
+        },
+        {
+          "id": "out_b8bd222e941d",
+          "label": "Asks-for-date",
+          "target": "node_958b40c2c8a6"
+        },
+        {
+          "id": "out_74224a7d60b9",
+          "label": "Nor-date-nor-answer",
+          "target": "node_2f27e4a8ac4f"
+        }
+      ]
+    },
+    {
+      "id": "node_1a77d13a49fe",
+      "type": "dialogue",
+      "position": {
+        "x": 438.96217980573,
+        "y": -234.23570846237277
+      },
+      "title": "Good",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "That's good to hear! Anything going on in your life?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_180646a85e4f",
+          "label": "asks-how-we-are",
+          "target": "node_243bd851695b"
+        },
+        {
+          "id": "out_6ced4fa16203",
+          "label": "asks-on-date",
+          "target": "node_67d577fb3c9e"
+        },
+        {
+          "id": "out_889f3e7c2e8a",
+          "label": "nor-date-nor-whatsup",
+          "target": "node_2f27e4a8ac4f"
+        }
+      ]
+    },
+    {
+      "id": "node_243bd851695b",
+      "type": "dialogue",
+      "position": {
+        "x": 436.3251229296793,
+        "y": 1465.662953171387
+      },
+      "title": "How're we",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "I'm doing well, thank you for asking. What's up?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_977a0ba73a1f",
+          "label": "asks-on-date",
+          "target": "node_67d577fb3c9e"
+        },
+        {
+          "id": "out_997f78b2b765",
+          "label": "nothing-with-date",
+          "target": "node_2f27e4a8ac4f"
+        }
+      ]
+    },
+    {
+      "id": "node_0d687a1a3310",
+      "type": "dialogue",
+      "position": {
+        "x": 434.7858587040379,
+        "y": 617.1158995854331
+      },
+      "title": "Bad",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Aw, what's up?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_07cdcc5a8fc8",
+          "label": "asks-on-date",
+          "target": "node_958b40c2c8a6"
+        },
+        {
+          "id": "out_ad0a066a3b35",
+          "label": "not-date",
+          "target": "node_2f27e4a8ac4f"
+        }
+      ]
+    },
+    {
+      "id": "node_958b40c2c8a6",
+      "type": "dialogue",
+      "position": {
+        "x": 1270.9626287482808,
+        "y": 1047.1842014053357
+      },
+      "title": "Date sudden",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Oh that's sudden! But yes, I'd love to go on a date with you! What do you have in mind?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_fe287600c988",
+          "label": "Restaurant",
+          "target": "node_ad29d5c77c24"
+        },
+        {
+          "id": "out_04170752ea12",
+          "label": "Ask-us-for-interests",
+          "target": "node_612e5f696daf"
+        },
+        {
+          "id": "out_7be3552b5854",
+          "label": "Activity",
+          "target": "node_d3d739a630bc"
+        },
+        {
+          "id": "out_7ca79378fb9c",
+          "label": "Drinks-or-food-without-restaurant-name",
+          "target": "node_3401fad937d6"
+        }
+      ]
+    },
+    {
+      "id": "node_2f27e4a8ac4f",
+      "type": "dialogue",
+      "position": {
+        "x": 1267.006869576158,
+        "y": 2078.39482171687
+      },
+      "title": "Small-talk-1",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Respond nicely, always end with a question and ground their response."
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_865a7093803d",
+          "label": "ask-on-date",
+          "target": "node_67d577fb3c9e"
+        },
+        {
+          "id": "out_3ab7bddbfb53",
+          "label": "nothing-about-date",
+          "target": "node_c88b6a69b6d1"
+        }
+      ]
+    },
+    {
+      "id": "node_67d577fb3c9e",
+      "type": "dialogue",
+      "position": {
+        "x": 1272.1397665470852,
+        "y": 122.82934971044338
+      },
+      "title": "Date happy",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "You mean a date? That sounds fun! What did you have in mind?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_8d0caf9b9e2e",
+          "label": "Restaurant",
+          "target": "node_ad29d5c77c24"
+        },
+        {
+          "id": "out_8d7c2bd0ec70",
+          "label": "Ask-us-for-interests",
+          "target": "node_612e5f696daf"
+        },
+        {
+          "id": "out_2053503095a2",
+          "label": "Activity",
+          "target": "node_d3d739a630bc"
+        },
+        {
+          "id": "out_46659bd24fdd",
+          "label": "Drinks-or-food-without-restaurant-name",
+          "target": "node_3401fad937d6"
+        }
+      ]
+    },
+    {
+      "id": "node_c88b6a69b6d1",
+      "type": "dialogue",
+      "position": {
+        "x": 1745.783256461844,
+        "y": 1885.47595530254
+      },
+      "title": "Small talk-date",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Respond but try to steer it towards asking them on a date to do something you pick. Keep grounding what the user says. Always end with a question."
+      },
+      "outputLabelInstruction": "If user suggests something different but still wants to do something, also accept the idea",
+      "outputs": [
+        {
+          "id": "out_24480f373f1d",
+          "label": "Accept-idea",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_5132e79436c6",
+          "label": "Reject-idea-to-go-on-date",
+          "target": "node_e6c41da95861"
+        },
+        {
+          "id": "out_f2da7075a869",
+          "label": "Ask-on-date",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_93216581ea69",
+          "label": "Nor-date-nor-accept-nor-reject",
+          "target": "node_c88b6a69b6d1"
+        },
+        {
+          "id": "out_5d312d961ae7",
+          "label": "Ask-for-other-date-ideas",
+          "target": "node_3b3a1dc82639"
+        }
+      ]
+    },
+    {
+      "id": "node_e6c41da95861",
+      "type": "dialogue",
+      "position": {
+        "x": 2269.186723800839,
+        "y": 2377.2512544359993
+      },
+      "title": "Small-talk-reject",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Don't push for a yes but ask if sure they don't want to go on a date. Keep grounding, so saying that you understand them etc. and repeat a bit what they say. Always end with a question."
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_32c31fd96fce",
+          "label": "Reject",
+          "target": "node_39c8c8202e0d"
+        },
+        {
+          "id": "out_adb1fec00a4a",
+          "label": "Accept-anyways",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_ef5585ee989c",
+          "label": "Nor-accept-nor-reject",
+          "target": "node_e6c41da95861"
+        },
+        {
+          "id": "out_a27b34977bde",
+          "label": "Wants-to-do-something-else",
+          "target": "node_13825e95154e"
+        }
+      ]
+    },
+    {
+      "id": "node_39c8c8202e0d",
+      "type": "end",
+      "position": {
+        "x": 2868.5210865464096,
+        "y": 2603.0884439483184
+      },
+      "title": "End conversation",
+      "endText": "Okay I respect that, have a nice day still!"
+    },
+    {
+      "id": "node_a3071989b9f6",
+      "type": "dialogue",
+      "position": {
+        "x": 4111.311152332433,
+        "y": 752.87529465628
+      },
+      "title": "Date selected",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "So you'd like to go to {subj}? That's awesome! Anything else we should plan?"
+      },
+      "outputLabelInstruction": "The subject here is the activity we discussed doing so far, not just the subject from the previous prompt. If we ask for something that isn't when we are available, go to Asks-us-something-different ",
+      "outputs": [
+        {
+          "id": "out_7f3d103bc186",
+          "label": "Time-weekday",
+          "target": "node_7ab86e39066d"
+        },
+        {
+          "id": "out_56efce07cc75",
+          "label": "New activity",
+          "target": "node_2e182493cb12"
+        },
+        {
+          "id": "out_9a6a245ff8ae",
+          "label": "Asks-if-we-like-this",
+          "target": "node_729e4c2be4c7"
+        },
+        {
+          "id": "out_04ed552d9c4b",
+          "label": "No-longer-wants-to-date",
+          "target": "node_e6c41da95861"
+        },
+        {
+          "id": "out_b510abd21edb",
+          "label": "Time-weekend",
+          "target": "node_902d0707754e"
+        },
+        {
+          "id": "out_140037bc6c3e",
+          "label": "Asks-when-available",
+          "target": "node_5c0c9ad8eef3"
+        },
+        {
+          "id": "out_d43cb7b65503",
+          "label": "Asks-us-something-different",
+          "target": "node_9592ae981599"
+        }
+      ]
+    },
+    {
+      "id": "node_ad29d5c77c24",
+      "type": "dialogue",
+      "position": {
+        "x": 2122.9681664458217,
+        "y": -401.44503950927555
+      },
+      "title": "Restaurant",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Is {subj} a restaurant or a place to eat or sit? What do they have?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_702c46744de4",
+          "label": "What-they-have-sounds-romantic",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_1da490a1a064",
+          "label": "Denies-its-a-restaurant",
+          "target": "node_b3535335c9eb"
+        },
+        {
+          "id": "out_8334b88b0d4e",
+          "label": "What-they-have-is-not-romantic",
+          "target": "node_a4c92d673ec1"
+        }
+      ]
+    },
+    {
+      "id": "node_d3d739a630bc",
+      "type": "dialogue",
+      "position": {
+        "x": 2125.234121007669,
+        "y": 378.0344069715197
+      },
+      "title": "Activity",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "You'd like to go {subj}? How would our day look like then?"
+      },
+      "outputLabelInstruction": "If the day sounds romantic, pick romantic. If it does not sound fun, pick unromantic",
+      "outputs": [
+        {
+          "id": "out_3a0741a511e4",
+          "label": "Romantic",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_2f64cf684126",
+          "label": "Unromantic",
+          "target": "node_a4c92d673ec1"
+        },
+        {
+          "id": "out_ea68f29304ee",
+          "label": "Asks-us-for-input",
+          "target": "node_16cd6b448947"
+        }
+      ]
+    },
+    {
+      "id": "node_612e5f696daf",
+      "type": "dialogue",
+      "position": {
+        "x": 2118.644706465281,
+        "y": 1147.6040711851767
+      },
+      "title": "Our interests",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "I usually love grabbing a bite to eat somewhere, maybe dancing or if we really want to go all out go to the zoo or something! What do you think?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_b396ca37e516",
+          "label": "Suggests-restaurant",
+          "target": "node_ad29d5c77c24"
+        },
+        {
+          "id": "out_20586524ce0f",
+          "label": "Suggests-activity",
+          "target": "node_d3d739a630bc"
+        },
+        {
+          "id": "out_bc771eaf3f15",
+          "label": "Asks-us-what-to-do",
+          "target": "node_3b3a1dc82639"
+        },
+        {
+          "id": "out_780cdfe17460",
+          "label": "No-longer-date",
+          "target": "node_e6c41da95861"
+        },
+        {
+          "id": "out_8313bd3469eb",
+          "label": "Drinks-or-food-without-restaurant-name",
+          "target": "node_3401fad937d6"
+        }
+      ]
+    },
+    {
+      "id": "node_b3535335c9eb",
+      "type": "dialogue",
+      "position": {
+        "x": 2779.804306724251,
+        "y": -485.61850094234853
+      },
+      "title": "Clarity",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Ask what they mean instead, first repeat their suggestion"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_2fa103a7599a",
+          "label": "Still-restaurant",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_ac15eb9c53c5",
+          "label": "Activity",
+          "target": "node_d3d739a630bc"
+        },
+        {
+          "id": "out_2ecafa8dd05f",
+          "label": "Ask-for-our-interest",
+          "target": "node_612e5f696daf"
+        },
+        {
+          "id": "out_376a93aba55d",
+          "label": "No-longer-date",
+          "target": "node_e6c41da95861"
+        }
+      ]
+    },
+    {
+      "id": "node_3b3a1dc82639",
+      "type": "dialogue",
+      "position": {
+        "x": 2951.813276531568,
+        "y": 1247.1402409020436
+      },
+      "title": "Bot-picks",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "You want me to pick? Let's go to the zoo then! I think that'd be fun! Is that ok?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_f853ab4feacf",
+          "label": "Accepts-idea",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_e552906f8f7d",
+          "label": "Rejects-idea-with-no-new-input",
+          "target": "node_1804e70f16bf"
+        },
+        {
+          "id": "out_f2c00684b758",
+          "label": "No-longer-wants-to-date",
+          "target": "node_e6c41da95861"
+        },
+        {
+          "id": "out_6914a25328ac",
+          "label": "Gives-new-idea",
+          "target": "node_d3d739a630bc"
+        }
+      ]
+    },
+    {
+      "id": "node_1804e70f16bf",
+      "type": "dialogue",
+      "position": {
+        "x": 3362.896433191745,
+        "y": 1895.3201124361997
+      },
+      "title": "Idea-reject",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Okay then we won't do that, do you have a better idea?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_446252b79ef5",
+          "label": "Restaurant",
+          "target": "node_ad29d5c77c24"
+        },
+        {
+          "id": "out_f833e31d1bb3",
+          "label": "Activity",
+          "target": "node_d3d739a630bc"
+        },
+        {
+          "id": "out_eab8f415ad01",
+          "label": "Ask-us-to-pick-something-else",
+          "target": "node_af548614ecea"
+        },
+        {
+          "id": "out_ed964e8cbfb2",
+          "label": "No-longer-date",
+          "target": "node_e6c41da95861"
+        },
+        {
+          "id": "out_4c1f3065300f",
+          "label": "Drinks-or-food-without-restaurant-name",
+          "target": "node_3401fad937d6"
+        }
+      ]
+    },
+    {
+      "id": "node_af548614ecea",
+      "type": "dialogue",
+      "position": {
+        "x": 3817.8274987135137,
+        "y": 1887.1553846065535
+      },
+      "title": "New-idea-loop",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Suggest something as a date idea that was not suggested before, don't ask them for a suggestion."
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_9e24db3d5a8c",
+          "label": "Ask-us-to-pick-something-else",
+          "target": "node_af548614ecea"
+        },
+        {
+          "id": "out_1391d70b360a",
+          "label": "Accept-date-idea",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_a777a089d7c6",
+          "label": "No-longer-want-to-go-on-date",
+          "target": "node_e6c41da95861"
+        },
+        {
+          "id": "out_f0194618254b",
+          "label": "Just-rejects-idea-with-no-new-input",
+          "target": "node_1804e70f16bf"
+        }
+      ]
+    },
+    {
+      "id": "node_3401fad937d6",
+      "type": "dialogue",
+      "position": {
+        "x": 2107.8806400032813,
+        "y": -1238.1712089465414
+      },
+      "title": "Food",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "I like the idea of {subj}! Where do you want to get that?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_2112e8ea521b",
+          "label": "suggests-restaurant",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_b34ebb3a2f7d",
+          "label": "suggests-something-unromantic",
+          "target": "node_a4c92d673ec1"
+        }
+      ]
+    },
+    {
+      "id": "node_a4c92d673ec1",
+      "type": "dialogue",
+      "position": {
+        "x": 2660.5767908530147,
+        "y": 470.1662304755387
+      },
+      "title": "Unnromantic",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "{subj} does not sound too romantic, do you have any other suggestions?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_7050d57cc817",
+          "label": "Romantic",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_ae985791b951",
+          "label": "Unromantic",
+          "target": "node_a4c92d673ec1"
+        },
+        {
+          "id": "out_1a41e43d828d",
+          "label": "Asks-us-for-interests",
+          "target": "node_612e5f696daf"
+        }
+      ]
+    },
+    {
+      "id": "node_16cd6b448947",
+      "type": "dialogue",
+      "position": {
+        "x": 3304.206564198508,
+        "y": 992.0190967925898
+      },
+      "title": "input-on-date",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Add some detail like, repeat what the current plan is and if this is what they want. Don't mention time yet."
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_87bb67af7891",
+          "label": "Accept-idea",
+          "target": "node_a3071989b9f6"
+        },
+        {
+          "id": "out_5437954f38b4",
+          "label": "Reject-idea",
+          "target": "node_1804e70f16bf"
+        },
+        {
+          "id": "out_888da1cbef35",
+          "label": "Ask-more-input",
+          "target": "node_16cd6b448947"
+        }
+      ]
+    },
+    {
+      "id": "node_7ab86e39066d",
+      "type": "dialogue",
+      "position": {
+        "x": 5044.297712051032,
+        "y": 518.2847853832798
+      },
+      "title": "weekday",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "I'm not sure if I can make {subj}, I can only do weekends"
+      },
+      "outputLabelInstruction": "{subj} is the suggested day or time.",
+      "outputs": [
+        {
+          "id": "out_eaec45977007",
+          "label": "This-is-a-weekend",
+          "target": "node_3cad3cda58cf"
+        },
+        {
+          "id": "out_a501a0b4d1f5",
+          "label": "Suggests-new-weekend-date",
+          "target": "node_902d0707754e"
+        },
+        {
+          "id": "out_726126a84d4d",
+          "label": "Not-available-weekends",
+          "target": "node_3aed3816eb29"
+        }
+      ]
+    },
+    {
+      "id": "node_902d0707754e",
+      "type": "dialogue",
+      "position": {
+        "x": 5645.785074441212,
+        "y": 1290.3538212991523
+      },
+      "title": "Weekend",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Going on {subj} sounds great! It's a date! Hmm, did we forget anything else?"
+      },
+      "outputLabelInstruction": "Subj is the day suggested",
+      "outputs": [
+        {
+          "id": "out_9697b97e6a60",
+          "label": "new-suggestion",
+          "target": "node_2e182493cb12"
+        },
+        {
+          "id": "out_9a044b51fe9a",
+          "label": "all-good",
+          "target": "node_daa42ae63574"
+        },
+        {
+          "id": "out_7925852eeccd",
+          "label": "no-longer-wants-to-do-anything",
+          "target": "node_0947d58ec29e"
+        },
+        {
+          "id": "out_ab0da69adee9",
+          "label": "small-talk-or-ask-us-question",
+          "target": "node_9592ae981599"
+        },
+        {
+          "id": "out_43256eb55c37",
+          "label": "ask-us-if-we-still-need-something",
+          "target": null
+        }
+      ]
+    },
+    {
+      "id": "node_3cad3cda58cf",
+      "type": "dialogue",
+      "position": {
+        "x": 5635.892840996205,
+        "y": 421.8157248275757
+      },
+      "title": "Weekend oops",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Oh I'm sorry I must've mistaken what you said, {subj} is indeed fine! It's a date, anything else you'd like to discuss beforehand?"
+      },
+      "outputLabelInstruction": "Subj is the day suggested",
+      "outputs": [
+        {
+          "id": "out_1ac464a1849d",
+          "label": "extra-things",
+          "target": "node_2e182493cb12"
+        },
+        {
+          "id": "out_ba99e02c8ab5",
+          "label": "nothing-else",
+          "target": "node_daa42ae63574"
+        },
+        {
+          "id": "out_66a0e455a20f",
+          "label": "no-longer-wants-to-go-on-date",
+          "target": "node_0947d58ec29e"
+        }
+      ]
+    },
+    {
+      "id": "node_2e182493cb12",
+      "type": "dialogue",
+      "position": {
+        "x": 4452.99755152131,
+        "y": 1918.9602920318418
+      },
+      "title": "Extra-things",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Answer whatever was asked and repeat the current date idea and time, if we did not discuss a time direct the conversation towards discussing one."
+      },
+      "outputLabelInstruction": "nothing-date-related can also be small talk about asking other things",
+      "outputs": [
+        {
+          "id": "out_3cb422b71926",
+          "label": "another-suggestion",
+          "target": "node_2e182493cb12"
+        },
+        {
+          "id": "out_d173a847e441",
+          "label": "asks-for-bot-opinion",
+          "target": "node_729e4c2be4c7"
+        },
+        {
+          "id": "out_a22edae87ae7",
+          "label": "time-suggested-weekend",
+          "target": "node_902d0707754e"
+        },
+        {
+          "id": "out_2928b7f5c08a",
+          "label": "time-suggested-weekday",
+          "target": "node_7ab86e39066d"
+        },
+        {
+          "id": "out_ff4f6afcdd36",
+          "label": "nothing-date-related",
+          "target": "node_9592ae981599"
+        }
+      ]
+    },
+    {
+      "id": "node_729e4c2be4c7",
+      "type": "dialogue",
+      "position": {
+        "x": 4965.342041445157,
+        "y": 1461.7135639499925
+      },
+      "title": "opinion",
+      "gesture": "BigSmile",
+      "response": {
+        "mode": "text",
+        "content": "I think {subj} is a pretty good date idea! I don't have anything else to add. I forgot, did we already discuss a  time?"
+      },
+      "outputLabelInstruction": "{subj} is the full date idea",
+      "outputs": [
+        {
+          "id": "out_1dee64fb092f",
+          "label": "suggest-time-weekend",
+          "target": "node_902d0707754e"
+        },
+        {
+          "id": "out_8cbe440690a7",
+          "label": "suggest-time-weekday",
+          "target": "node_7ab86e39066d"
+        },
+        {
+          "id": "out_9c8912ea3e1e",
+          "label": "suggests-new-activity",
+          "target": "node_2e182493cb12"
+        },
+        {
+          "id": "out_bfd27728cbe6",
+          "label": "no-longer-wants-to-go-on-date",
+          "target": "node_0947d58ec29e"
+        }
+      ]
+    },
+    {
+      "id": "node_0947d58ec29e",
+      "type": "dialogue",
+      "position": {
+        "x": 5359.651388153644,
+        "y": 2257.3608445622326
+      },
+      "title": "reject-after-idea",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "After all that planning you no longer want to go? That sucks, are you sure?"
+      },
+      "outputLabelInstruction": "Only select the nevermind-already-discussed-time if in previous responses we already discussed when to meet",
+      "outputs": [
+        {
+          "id": "out_75c1772b8881",
+          "label": "is-sure",
+          "target": "node_f30127e6ba7f"
+        },
+        {
+          "id": "out_eef2dbfcd842",
+          "label": "nevermind-no-time-discussed-yet",
+          "target": "node_b3331e855152"
+        },
+        {
+          "id": "out_550870abcfd9",
+          "label": "nevermind-already-discussed-time",
+          "target": "node_daa42ae63574"
+        }
+      ]
+    },
+    {
+      "id": "node_b3331e855152",
+      "type": "dialogue",
+      "position": {
+        "x": 5581.349224085918,
+        "y": 2273.685891136332
+      },
+      "title": "extra-time",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "I'm glad to hear that! Do you want to discuss when to meet or do you have other suggestions before we move onto the planning?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_4b471cd4b3c3",
+          "label": "time-weekend",
+          "target": "node_902d0707754e"
+        },
+        {
+          "id": "out_d7881a6282a0",
+          "label": "time-weekday",
+          "target": "node_7ab86e39066d"
+        },
+        {
+          "id": "out_e5eb578851ed",
+          "label": "extra-suggestion",
+          "target": "node_2e182493cb12"
+        },
+        {
+          "id": "out_2ce72c5efa11",
+          "label": "no-longer-wants-to-go-on-date",
+          "target": "node_f30127e6ba7f"
+        },
+        {
+          "id": "out_97e89113e129",
+          "label": "small-talk-or-ask-us-question",
+          "target": "node_9592ae981599"
+        }
+      ]
+    },
+    {
+      "id": "node_daa42ae63574",
+      "type": "dialogue",
+      "position": {
+        "x": 6407.251794409515,
+        "y": 2041.2579741124578
+      },
+      "title": "End",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Repeat the entire date activity and time and ask for the last time whether it sounds good"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_042f0ab26881",
+          "label": "sounds-good",
+          "target": "node_942dcc1f5ee6"
+        },
+        {
+          "id": "out_ff05d92ba179",
+          "label": "no-longer-wants-to-go",
+          "target": "node_0947d58ec29e"
+        }
+      ]
+    },
+    {
+      "id": "node_f30127e6ba7f",
+      "type": "dialogue",
+      "position": {
+        "x": 5931.885012679473,
+        "y": 3149.7564737293064
+      },
+      "title": "change mind",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Attempt to change their mind, ask if they are sure once more"
+      },
+      "outputLabelInstruction": "s we already discussed when to meet",
+      "outputs": [
+        {
+          "id": "out_ab5226f39a2e",
+          "label": "still-doesnt-want-to-go",
+          "target": "node_1040045cbff1"
+        },
+        {
+          "id": "out_be208869c897",
+          "label": "nevermind-no-time-discussed-yet",
+          "target": "node_b3331e855152"
+        },
+        {
+          "id": "out_20d6b321640c",
+          "label": "nevermind-already-discussed-time",
+          "target": "node_daa42ae63574"
+        }
+      ]
+    },
+    {
+      "id": "node_1040045cbff1",
+      "type": "end",
+      "position": {
+        "x": 6233.917133839577,
+        "y": 3357.3301043269585
+      },
+      "title": "End conversation",
+      "endText": "Alright, I respect your decision. See ya later, I guess"
+    },
+    {
+      "id": "node_942dcc1f5ee6",
+      "type": "end",
+      "position": {
+        "x": 7048.03508646014,
+        "y": 2371.7312741605524
+      },
+      "title": "End conversation",
+      "endText": "I'm looking forward to it! Have a nice day and see you then!"
+    },
+    {
+      "id": "node_3aed3816eb29",
+      "type": "dialogue",
+      "position": {
+        "x": 6117.116565884353,
+        "y": 1000.964485685992
+      },
+      "title": "make time",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Ok I'll make time on {subj} then, it's not the most convenient but I don't want to pass up on a date with you!"
+      },
+      "outputLabelInstruction": "{subj} is the discussed time",
+      "outputs": [
+        {
+          "id": "out_109022768900",
+          "label": "accept-time",
+          "target": "node_daa42ae63574"
+        },
+        {
+          "id": "out_ab681e1a44aa",
+          "label": "weekend-day-suggested",
+          "target": "node_902d0707754e"
+        },
+        {
+          "id": "out_a7d474d191ac",
+          "label": "ask-if-sure-if-its-ok",
+          "target": "node_635367e78784"
+        },
+        {
+          "id": "out_d76c3a12ba81",
+          "label": "no-longer-wants-to-do-anything",
+          "target": "node_0947d58ec29e"
+        }
+      ]
+    },
+    {
+      "id": "node_635367e78784",
+      "type": "dialogue",
+      "position": {
+        "x": 6541.817126496971,
+        "y": 1072.6849767501883
+      },
+      "title": "no worries",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "It's all fine! I'm happy to go with you! Did you want to discuss anything else or are we good then?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_4bec9219697f",
+          "label": "all-good",
+          "target": "node_daa42ae63574"
+        },
+        {
+          "id": "out_65f74b90f452",
+          "label": "new-suggestion",
+          "target": "node_2e182493cb12"
+        },
+        {
+          "id": "out_64a40dbc3f7f",
+          "label": "no-longer-wants-to-go",
+          "target": "node_0947d58ec29e"
+        }
+      ]
+    },
+    {
+      "id": "node_5c0c9ad8eef3",
+      "type": "dialogue",
+      "position": {
+        "x": 4559.948758581788,
+        "y": 1074.711240830976
+      },
+      "title": "Give timeplan",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "Oh I'm available almost every weekend, when would you prefer?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_358b8b3ff326",
+          "label": "suggests-weekend-day",
+          "target": "node_902d0707754e"
+        },
+        {
+          "id": "out_a0aa17ce2fb6",
+          "label": "suggests-week-day",
+          "target": "node_3aed3816eb29"
+        }
+      ]
+    },
+    {
+      "id": "node_9592ae981599",
+      "type": "dialogue",
+      "position": {
+        "x": 4864.201019696082,
+        "y": 2669.6402756351176
+      },
+      "title": "Smalltalk",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Answer their question nicely"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_2a653706977a",
+          "label": "still-nothing-date-related",
+          "target": "node_bbaa1963e4ef"
+        },
+        {
+          "id": "out_99bd8736cbe9",
+          "label": "asks-when-available",
+          "target": "node_5c0c9ad8eef3"
+        },
+        {
+          "id": "out_3b62e35dbabd",
+          "label": "gives-time",
+          "target": "node_3aed3816eb29"
+        },
+        {
+          "id": "out_b2c6dd445567",
+          "label": "asks-for-date-stuff",
+          "target": "node_2e182493cb12"
+        }
+      ]
+    },
+    {
+      "id": "node_bbaa1963e4ef",
+      "type": "dialogue",
+      "position": {
+        "x": 5233.930967936371,
+        "y": 3372.2912381680385
+      },
+      "title": "Small-talk-back-on-track",
+      "gesture": "AI",
+      "response": {
+        "mode": "ai",
+        "content": "Answer again nicely, but try to get the date back on track"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_a14e3fc1b427",
+          "label": "still-nothing-date-related",
+          "target": "node_bbaa1963e4ef"
+        },
+        {
+          "id": "out_b49e14b22206",
+          "label": "asks-when-available",
+          "target": "node_5c0c9ad8eef3"
+        },
+        {
+          "id": "out_9f48037ffcd8",
+          "label": "gives-time",
+          "target": "node_3aed3816eb29"
+        },
+        {
+          "id": "out_a79148fbed16",
+          "label": "asks-for-date-stuff",
+          "target": "node_2e182493cb12"
+        }
+      ]
+    },
+    {
+      "id": "node_13825e95154e",
+      "type": "dialogue",
+      "position": {
+        "x": 2591.071044267412,
+        "y": 1565.0277295693566
+      },
+      "title": "Something else",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "We can do something else for sure, what did you have in mind?"
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_a925434a2d5a",
+          "label": "Asks-for-suggestions",
+          "target": "node_612e5f696daf"
+        },
+        {
+          "id": "out_934f7f94d2de",
+          "label": "Restaurant",
+          "target": "node_ad29d5c77c24"
+        },
+        {
+          "id": "out_bec8d04d8c0f",
+          "label": "Activity",
+          "target": "node_d3d739a630bc"
+        },
+        {
+          "id": "out_cc3b7e2631a6",
+          "label": "Drinks-or-food-without-restaurant-name",
+          "target": "node_3401fad937d6"
+        }
+      ]
+    },
+    {
+      "id": "node_ebfe360b0d5b",
+      "type": "dialogue",
+      "position": {
+        "x": 6025.268258467261,
+        "y": 2025.3643697987054
+      },
+      "title": "Ask us for other things",
+      "gesture": "AI",
+      "response": {
+        "mode": "text",
+        "content": "I think I'm all good! Let me know if you think of anything else, or feel free to text me whatever comes up."
+      },
+      "outputLabelInstruction": "",
+      "outputs": [
+        {
+          "id": "out_9ff7ee47571d",
+          "label": "accepts",
+          "target": "node_942dcc1f5ee6"
+        },
+        {
+          "id": "out_c98785f29c29",
+          "label": "one-other-thing",
+          "target": "node_9592ae981599"
+        },
+        {
+          "id": "out_3d3e435baa60",
+          "label": "no-longer-wants-to-go",
+          "target": "node_0947d58ec29e"
+        }
+      ]
+    }
+  ]
+}

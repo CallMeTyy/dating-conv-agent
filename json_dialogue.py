@@ -322,14 +322,14 @@ def choose_output_label(
         f"Choose exactly one label from this list: {labels_text}\n"
         "Special labels:\n"
         "  - 'Repeat': user wants you to repeat what you just said\n"
-        "  - 'Confused': user is confused or lost and needs clarification, only pick when nothing else fits.\n"
+        "  - 'Confused': user is confused or lost and needs clarification, for example when just saying sorry? or other confused utterences\n"
         "Return in this exact format: <label> [<subject>] {<gesture>}\n"
         "The subject should be a short concrete phrase from the latest user utterance.\n"
         "If no clear subject is mentioned, return empty brackets like [] .\n"
         f"Gesture must be exactly one of: {', '.join(ALLOWED_GESTURES)}\n"
         "Do not explain your choice.\n"
         "If the latest user utterance is not English, choose 'other-language'.\n"
-        "Use 'default' only if no other label fits."
+        "Never pick 'default'"
     )
 
     extra_instruction = (node.output_label_instruction or "").strip()

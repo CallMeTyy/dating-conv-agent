@@ -11,6 +11,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from datetime import datetime
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -29,14 +30,6 @@ DIALOGUE_FILE_SELECTION = "LOCAL"
 # DIALOGUE_FILE_SELECTION = "dialogue-tree-2026-03-25-10-45-14.json"
 
 OPENAI_MODEL = "gpt-4.1-mini"
-
-# If furhat.say() is non-blocking in your setup, enable this guard to avoid
-# capturing robot audio as user input.
-NON_BLOCKING_SPEECH_GUARD = True
-SPEECH_GUARD_MIN_WAIT_SEC = 0.5
-SPEECH_GUARD_MAX_WAIT_SEC = 8.0
-SPEECH_GUARD_EXTRA_WAIT_SEC = 0.25
-SPEECH_GUARD_WORDS_PER_SEC = 2.6
 
 ALLOWED_GESTURES = [
     "BigSmile",
@@ -323,23 +316,23 @@ def choose_output_label(
 ) -> Tuple[str, Optional[str], Optional[str]]:
     labels = [edge.label for edge in node.outputs]
     # Always add special intents as available options
-    labels.extend(["Repeat", "Confused", "other-language"])
+    labels.extend(["Repeat", "Confused"])
     labels_text = ", ".join(labels)
 
     system_prompt = (
-        "You are a dialogue router for a spoken conversation.\n"
+       "You are a dialogue router for a spoken conversation about setting up a date.\n"
+       f"Today is {datetime.now().strftime('%Y-%m-%d')}.\n"
         f"Choose exactly one label from this list: {labels_text}\n"
         "Special labels:\n"
-        "  - 'Repeat': user wants you to repeat what you just said.\n"
-        "  - 'Confused': user is confused or lost and needs clarification\n"
-        "  - 'other-language': user's utterance is not English\n"
+        "  - 'Repeat': user wants you to repeat what you just said\n"
+        "  - 'Confused': user is confused or lost and needs clarification, for example when just saying sorry? or other confused utterences\n"
         "Return in this exact format: <label> [<subject>] {<gesture>}\n"
         "The subject should be a short concrete phrase from the latest user utterance.\n"
         "If no clear subject is mentioned, return empty brackets like [] .\n"
         f"Gesture must be exactly one of: {', '.join(ALLOWED_GESTURES)}\n"
         "Do not explain your choice.\n"
         "If the latest user utterance is not English, choose 'other-language'.\n"
-        "Use 'default' only if no other label fits."
+        "Never pick 'default'"
     )
 
     extra_instruction = (node.output_label_instruction or "").strip()
@@ -525,45 +518,6 @@ def speak(furhat: FurhatRemoteAPI, text: str, gesture: Optional[str] = None) -> 
     print("Robot finished speaking.")
 
 
-def _estimate_speech_duration_seconds(text: str) -> float:
-    words = re.findall(r"\b\w+\b", text or "")
-    if not words:
-        return 0.2#;SPEECH_GUARD_MIN_WAIT_SEC
-
-    raw = (len(words) / SPEECH_GUARD_WORDS_PER_SEC) + SPEECH_GUARD_EXTRA_WAIT_SEC
-    return 0.2#max(SPEECH_GUARD_MIN_WAIT_SEC, min(SPEECH_GUARD_MAX_WAIT_SEC, raw))
-
-
-def wait_for_speech_end(furhat: FurhatRemoteAPI, last_text: str) -> None:
-    if not NON_BLOCKING_SPEECH_GUARD:
-        return
-
-    speaking_method_names = ["is_speaking", "isSpeaking", "get_is_speaking"]
-    speaking_method = None
-    for name in speaking_method_names:
-        candidate = getattr(furhat, name, None)
-        if callable(candidate):
-            speaking_method = candidate
-            break
-
-    if speaking_method is not None:
-        deadline = time.monotonic() + SPEECH_GUARD_MAX_WAIT_SEC
-        while time.monotonic() < deadline:
-            try:
-                speaking = bool(speaking_method())
-            except Exception:
-                speaking = None
-                break
-
-            if not speaking:
-                return
-            time.sleep(0.05)
-
-    #wait_sec = _estimate_speech_duration_seconds(last_text) + 0.5
-    #print(f"Speech guard: waiting {wait_sec:.2f}s before listen")
-    #time.sleep(wait_sec)
-
-
 def listen(furhat: FurhatRemoteAPI) -> str:
     print("Listening for user input...")
     user_utt = furhat.listen()
@@ -667,7 +621,6 @@ def run_dialogue(
         # 4. Get user input and classify to an output label.
         # Loop here to handle special intents without state transitions.
         while True:
-            #wait_for_speech_end(furhat, last_robot_response)
             user_utt = listen(furhat)
             history.append({"role": "user", "content": user_utt})
 
@@ -732,7 +685,7 @@ def run_dialogue(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", type=str, default="10.33.230.253", help="Furhat robot IP address")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Furhat robot IP address")
     parser.add_argument("--auth_key", type=str, default="admin", help="Unused with deprecated remote API")
     parser.add_argument(
         "--dialogue",
@@ -770,11 +723,7 @@ if __name__ == "__main__":
         print(f"Failed to load dialogue file: {e}")
         sys.exit(1)
 
-    try:
-        furhat.set_voice(name="Fenna")
-    except Exception as e:
-        print(f"Voice setup failed: {e}")
-
+    furhat.set_voice(name="FableTurboMultilingualNeural")
     # Face APIs differ by wrapper versions; keep optional.
     furhat.set_face(mask="adult",character="Fedora")
 
